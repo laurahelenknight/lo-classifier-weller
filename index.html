@@ -1,1 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Outcomes Classifier - Weller Framework</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 3px solid #9C27B0;
+            padding-bottom: 10px;
+        }
+        .framework-toggle {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .framework-toggle label {
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        .framework-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .input-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            background: #9C27B0;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #7B1FA2;
+        }
+        button.compare {
+            background: #FF5722;
+        }
+        button.compare:hover {
+            background: #D84315;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .outcome-result {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #9C27B0;
+            background: #f9f9f9;
+        }
+        .outcome-result.DESCRIPTIVE {
+            border-left-color: #2196F3;
+        }
+        .outcome-result.INTEGRATIVE {
+            border-left-color: #FF9800;
+        }
+        .outcome-result.CRITICAL {
+            border-left-color: #9C27B0;
+        }
+        .outcome-result.AWARENESS {
+            border-left-color: #2196F3;
+        }
+        .outcome-result.IDEATION {
+            border-left-color: #FF9800;
+        }
+        .outcome-result.SHIFT {
+            border-left-color: #9C27B0;
+        }
+        .edge-case {
+            background: #fff3cd;
+            border-left-color: #ffc107 !important;
+        }
+        .classification {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .confidence {
+            color: #666;
+            font-size: 14px;
+        }
+        .rationale {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        .edge-warning {
+            color: #856404;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .summary {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .comparison {
+            background: #fff3e0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #FF5722;
+        }
+        .hidden {
+            display: none;
+        }
+        .file-input {
+            margin: 10px 0;
+        }
+        #csvData {
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Learning Outcomes Classifier - Framework Comparison</h1>
+        
+        <div class="framework-toggle">
+            <label>
+                <input type="radio" name="framework" value="weller" checked> 
+                Weller Outcome Complexity Matrix
+            </label>
+            <label>
+                <input type="radio" name="framework" value="empirical"> 
+                Empirically-Derived Patterns
+            </label>
+            <label>
+                <input type="radio" name="framework" value="compare"> 
+                Compare Both Frameworks
+            </label>
+        </div>
+        
+        <div id="wellerInfo" class="framework-info">
+            <strong>Weller Framework:</strong><br>
+            <strong>DESCRIPTIVE:</strong> define, label, name, recognize, reproduce, state, identify, recall, observe, report<br>
+            <strong>INTEGRATIVE:</strong> classify, organize, relate, explain, compare, contrast, discuss, summarise, translate, predict<br>
+            <strong>CRITICAL:</strong> analyze, synthesize, evaluate, assess, construct, formulate, devise, propose, hypothesize, generate
+        </div>
+        
+        <div id="empiricalInfo" class="framework-info hidden">
+            <strong>Empirical Patterns:</strong><br>
+            <strong>AWARENESS:</strong> "articulate an understanding", "demonstrate awareness", "reflect on...in relation to"<br>
+            <strong>IDEATION:</strong> "undertake...to inform...development", "apply approaches and strategies", "integrate principles"<br>
+            <strong>SHIFT:</strong> "exercise significant judgement", "create one's own vision", "evaluate multiple futures"
+        </div>
+        
+        <div class="input-section">
+            <h3>Input Options:</h3>
+            
+            <div>
+                <label>
+                    <input type="radio" name="inputType" value="single" checked> 
+                    Single Outcome Analysis
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input type="radio" name="inputType" value="batch"> 
+                    Batch Analysis (CSV Format)
+                </label>
+            </div>
+            
+            <div id="singleInput">
+                <h4>Enter Learning Outcome:</h4>
+                <textarea id="outcomeText" placeholder="Enter a learning outcome to classify..."></textarea>
+                <button onclick="analyzeSingle()">Analyze Outcome</button>
+            </div>
+            
+            <div id="batchInput" class="hidden">
+                <h4>CSV Data (Format: id,outcome_text):</h4>
+                <textarea id="csvData" placeholder="EC1,Exercise significant judgement in empathetic creative practice
+EC2,Demonstrate awareness of sustainability issues
+EC3,Apply approaches and strategies to develop solutions"></textarea>
+                <div class="file-input">
+                    <input type="file" id="csvFile" accept=".csv" onchange="loadCSV()">
+                    <button onclick="analyzeBatch()">Analyze All Outcomes</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
 
+    <script>
+        // Weller Framework classifier
+        function analyzeOutcomeWeller(outcomeText, outcomeId = null) {
+            const wellerPatterns = {
+                CRITICAL: {
+                    // Critical thinking - highest complexity
+                    words: [
+                        'analyze', 'analyse', 'synthesize', 'synthesise', 'evaluate', 'assess', 
+                        'construct', 'formulate', 'devise', 'propose', 'hypothesize', 'hypothesise',
+                        'generate', 'criticise', 'criticize', 'conceptualise', 'conceptualize',
+                        'appraise', 'question', 'modify', 'assemble', 'organize', 'organise',
+                        'categorise', 'categorize', 'debate', 'associate', 'combine', 'manage',
+                        'rearrange', 'experiment', 'relate', 'consider possibilities'
+                    ],
+                    priority: 3
+                },
+                INTEGRATIVE: {
+                    // Integration and application - medium complexity
+                    words: [
+                        'classify', 'convert', 'arrange', 'order', 'explain', 'express',
+                        'clarify', 'compare', 'contrast', 'distinguish', 'discuss', 'extrapolate',
+                        'summarise', 'summarize', 'select', 'restate', 'translate', 'estimate',
+                        'extend', 'generalise', 'generalize', 'predict', 'review', 'infer',
+                        'reorganise', 'reorganize', 'interpret', 'choose', 'associate', 'manipulate'
+                    ],
+                    priority: 2
+                },
+                DESCRIPTIVE: {
+                    // Basic knowledge - lowest complexity
+                    words: [
+                        'define', 'label', 'name', 'recognise', 'recognize', 'reproduce', 'state',
+                        'memorise', 'memorize', 'record', 'list', 'identify', 'recall', 'observe',
+                        'report', 'present', 'paraphrase', 'distinguish', 'calculate', 'collect',
+                        'distill', 'differentiate', 'derive', 'investigate', 'examine', 'inspect',
+                        'outline', 'discriminate', 'practise', 'practice', 'solve', 'apply',
+                        'demonstrate', 'use', 'employ', 'operate', 'implement', 'measure',
+                        'compute', 'communicate', 'illustrate'
+                    ],
+                    priority: 1
+                }
+            };
+
+            return classifyWithPatterns(outcomeText, outcomeId, wellerPatterns, 'Weller');
+        }
+
+        // Empirical Framework classifier (your original)
+        function analyzeOutcomeEmpirical(outcomeText, outcomeId = null) {
+            const empiricalPatterns = {
+                SHIFT: {
+                    phrases: [
+                        'exercise significant judgment', 'exercise significant judgement',
+                        'to create one\'s own vision for the future', 'create one\'s own vision for the future',
+                        'to locate yourself', 'locate yourself', 'evaluate multiple futures',
+                        'assess the consequence of actions', 'evaluating the potential impact of your practice',
+                        'take a position.*in the discourse', 'evidence originality in the application of subject knowledge',
+                        'test new hypotheses or speculations about the role'
+                    ],
+                    words: ['innovation', 'acute awareness'],
+                    priority: 3
+                },
+                IDEATION: {
+                    phrases: [
+                        'integrate principles.*in projects', 'apply approaches and strategies.*in response to',
+                        'define a strategy and concept', 'develop and resolve.*project.*that responds',
+                        'devise a proposal.*informed by', 'undertake analysis.*to support the development',
+                        'develop.*whilst consideration', 'test.*to explore and inform.*whilst considering',
+                        'produce.*that explore.*whilst acknowledging', 'explore.*and consider',
+                        'make.*through curiosity.*to discover creative solution', 'respond.*through.*analysis',
+                        'apply.*to inform.*in relation to', 'apply to develop and produce',
+                        'demonstrate an exploratary approach and solution minded attitude',
+                        'develop proposals.*that integrate', 'create design projects.*respond to',
+                        'apply.*practices in the production of', 'produce.*informed by',
+                        'integrate knowledge into', 'synthesise research into', 'synthesize research into',
+                        'execute proposals which show', 'undertake.*to inform.*development',
+                        'demonstrating integrated problem solving.*to develop', 'high level skills of self direction',
+                        'demonstrate resolution in negotiating', 'identify and develop.*that articulates'
+                    ],
+                    words: [
+                        'apply', 'assess', 'communicate', 'conceive', 'create', 'define', 
+                        'develop', 'devise', 'evaluate', 'evidence', 'execute', 'experiment',
+                        'implement', 'integrate', 'manage', 'negotiate', 'produce', 'resolve',
+                        'respond', 'self-direct', 'synthesis', 'synthesize', 'translate', 'test', 'undertake'
+                    ],
+                    priority: 2
+                },
+                AWARENESS: {
+                    phrases: [
+                        'investigate.*to inform', 'investigate the emergence', 'explore the issues',
+                        'demonstrating an understanding', 'with consideration', 'should be considered',
+                        'articulate an understanding', 'reflect on.*in relation to', 'demonstrate awareness',
+                        'research and analyse.*conditions', 'demonstrate awareness.*and critical understanding',
+                        'demonstrate knowledge', 'demonstrate understanding', 'employ enhance knowledge',
+                        'gather.*to inform', 'demonstrate a critical understanding'
+                    ],
+                    words: [
+                        'investigate', 'inform', 'explore', 'identify', 'pursue', 
+                        'articulate', 'reflect', 'research', 'analyse', 'analyze', 
+                        'employ', 'gather', 'work collaboratively'
+                    ],
+                    priority: 1
+                }
+            };
+
+            return classifyWithEmpirical(outcomeText, outcomeId, empiricalPatterns, 'Empirical');
+        }
+
+        // Generic classification function for word-based patterns (Weller)
+        function classifyWithPatterns(outcomeText, outcomeId, patterns, frameworkName) {
+            const normalizedText = outcomeText.toLowerCase();
+            const detectedPatterns = { CRITICAL: [], INTEGRATIVE: [], DESCRIPTIVE: [] };
+            
+            // Pattern detection
+            for (const [level, data] of Object.entries(patterns)) {
+                for (const word of data.words) {
+                    const regex = new RegExp(`\\b${word}\\b`, 'i');
+                    if (regex.test(normalizedText)) {
+                        detectedPatterns[level].push(word);
+                    }
+                }
+            }
+            
+            // Hierarchical classification
+            let classification = 'DESCRIPTIVE';
+            if (detectedPatterns.CRITICAL.length > 0) {
+                classification = 'CRITICAL';
+            } else if (detectedPatterns.INTEGRATIVE.length > 0) {
+                classification = 'INTEGRATIVE';
+            }
+            
+            // Confidence calculation
+            const classifiedMatches = detectedPatterns[classification].length;
+            const totalMatches = Object.values(detectedPatterns).flat().length;
+            let confidence = totalMatches > 0 ? classifiedMatches / totalMatches : 0;
+            
+            const levelsWithMatches = Object.values(detectedPatterns).filter(arr => arr.length > 0).length;
+            if (levelsWithMatches > 1) confidence *= 0.8;
+            
+            // Edge case detection
+            const edgeCaseReasons = [];
+            const levelsWithPatterns = Object.entries(detectedPatterns)
+                .filter(([level, patterns]) => patterns.length > 0)
+                .map(([level, patterns]) => level);
+            
+            if (levelsWithPatterns.length >= 2) {
+                edgeCaseReasons.push(`Mixed signals: patterns from ${levelsWithPatterns.join(', ')}`);
+            }
+            if (confidence < 0.4) {
+                edgeCaseReasons.push(`Low confidence score: ${confidence.toFixed(3)}`);
+            }
+            
+            // Rationale
+            let rationale = '';
+            if (detectedPatterns[classification].length > 0) {
+                const patterns = detectedPatterns[classification].slice(0, 3).join(', ');
+                rationale = `${frameworkName}: Classified as ${classification} based on detected words: ${patterns}`;
+                const otherLevels = levelsWithPatterns.filter(level => level !== classification);
+                if (otherLevels.length > 0) {
+                    rationale += `. Also contains patterns from: ${otherLevels.join(', ')}`;
+                }
+            } else {
+                rationale = `${frameworkName}: Default classification to ${classification} - no specific patterns detected`;
+            }
+            
+            return {
+                id: outcomeId,
+                text: outcomeText,
+                classification: classification,
+                confidence: Math.round(confidence * 1000) / 1000,
+                detectedPatterns: detectedPatterns,
+                rationale: rationale,
+                isEdgeCase: edgeCaseReasons.length > 0,
+                edgeCaseReasons: edgeCaseReasons,
+                framework: frameworkName,
+                allDetectedIndicators: Object.values(detectedPatterns).flat()
+            };
+        }
+
+        // Classification function for phrase+word patterns (Empirical)
+        function classifyWithEmpirical(outcomeText, outcomeId, patterns, frameworkName) {
+            const normalizedText = outcomeText.toLowerCase();
+            const detectedPatterns = { SHIFT: [], IDEATION: [], AWARENESS: [] };
+            
+            // Pattern detection - prioritize phrases over single words
+            for (const [level, data] of Object.entries(patterns)) {
+                // First, detect specific phrases (higher confidence)
+                if (data.phrases) {
+                    for (const phrase of data.phrases) {
+                        const regex = new RegExp(phrase.replace(/\.\*/g, '.*'), 'i');
+                        if (regex.test(normalizedText)) {
+                            detectedPatterns[level].push(`[PHRASE] ${phrase}`);
+                        }
+                    }
+                }
+                
+                // Then, detect single words
+                if (data.words) {
+                    for (const word of data.words) {
+                        const regex = new RegExp(`\\b${word}\\b`, 'i');
+                        if (regex.test(normalizedText)) {
+                            detectedPatterns[level].push(`[WORD] ${word}`);
+                        }
+                    }
+                }
+            }
+            
+            // Hierarchical classification
+            let classification = 'AWARENESS';
+            if (detectedPatterns.SHIFT.length > 0) {
+                classification = 'SHIFT';
+            } else if (detectedPatterns.IDEATION.length > 0) {
+                classification = 'IDEATION';
+            }
+            
+            // Confidence calculation - weight phrases higher than words
+            const classifiedPhrases = detectedPatterns[classification].filter(p => p.includes('[PHRASE]')).length;
+            const classifiedWords = detectedPatterns[classification].filter(p => p.includes('[WORD]')).length;
+            const totalPhrases = Object.values(detectedPatterns).flat().filter(p => p.includes('[PHRASE]')).length;
+            const totalWords = Object.values(detectedPatterns).flat().filter(p => p.includes('[WORD]')).length;
+            
+            let confidence = 0;
+            if (totalPhrases > 0 || totalWords > 0) {
+                const classifiedWeight = (classifiedPhrases * 3) + classifiedWords;
+                const totalWeight = (totalPhrases * 3) + totalWords;
+                confidence = classifiedWeight / totalWeight;
+                
+                if (classifiedPhrases > 0) confidence = Math.min(1.0, confidence * 1.2);
+                
+                const levelsWithMatches = Object.values(detectedPatterns).filter(arr => arr.length > 0).length;
+                if (levelsWithMatches > 1) confidence *= 0.8;
+            }
+            
+            // Edge case detection and rationale (similar to Weller but adapted for empirical patterns)
+            const edgeCaseReasons = [];
+            const levelsWithPatterns = Object.entries(detectedPatterns)
+                .filter(([level, patterns]) => patterns.length > 0)
+                .map(([level, patterns]) => level);
+            
+            if (levelsWithPatterns.length >= 2) {
+                edgeCaseReasons.push(`Mixed signals: patterns from ${levelsWithPatterns.join(', ')}`);
+            }
+            if (confidence < 0.4) {
+                edgeCaseReasons.push(`Low confidence score: ${confidence.toFixed(3)}`);
+            }
+            
+            let rationale = '';
+            if (detectedPatterns[classification].length > 0) {
+                const cleanPatterns = detectedPatterns[classification]
+                    .slice(0, 3)
+                    .map(p => p.replace('[PHRASE] ', '').replace('[WORD] ', ''))
+                    .join(', ');
+                rationale = `${frameworkName}: Classified as ${classification} based on detected patterns: ${cleanPatterns}`;
+            } else {
+                rationale = `${frameworkName}: Default classification to ${classification} - no specific patterns detected`;
+            }
+            
+            return {
+                id: outcomeId,
+                text: outcomeText,
+                classification: classification,
+                confidence: Math.round(confidence * 1000) / 1000,
+                detectedPatterns: detectedPatterns,
+                rationale: rationale,
+                isEdgeCase: edgeCaseReasons.length > 0,
+                edgeCaseReasons: edgeCaseReasons,
+                framework: frameworkName,
+                allDetectedIndicators: Object.values(detectedPatterns).flat()
+            };
+        }
+
+        // UI Functions
+        document.querySelectorAll('input[name="framework"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'weller') {
+                    document.getElementById('wellerInfo').classList.remove('hidden');
+                    document.getElementById('empiricalInfo').classList.add('hidden');
+                } else if (this.value === 'empirical') {
+                    document.getElementById('wellerInfo').classList.add('hidden');
+                    document.getElementById('empiricalInfo').classList.remove('hidden');
+                } else {
+                    document.getElementById('wellerInfo').classList.remove('hidden');
+                    document.getElementById('empiricalInfo').classList.remove('hidden');
+                }
+            });
+        });
+
+        document.querySelectorAll('input[name="inputType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'single') {
+                    document.getElementById('singleInput').classList.remove('hidden');
+                    document.getElementById('batchInput').classList.add('hidden');
+                } else {
+                    document.getElementById('singleInput').classList.add('hidden');
+                    document.getElementById('batchInput').classList.remove('hidden');
+                }
+            });
+        });
+
+        function analyzeSingle() {
+            const text = document.getElementById('outcomeText').value.trim();
+            if (!text) {
+                alert('Please enter a learning outcome to analyze.');
+                return;
+            }
+            
+            const framework = document.querySelector('input[name="framework"]:checked').value;
+            let results = [];
+            
+            if (framework === 'weller') {
+                results = [analyzeOutcomeWeller(text, 'SINGLE')];
+            } else if (framework === 'empirical') {
+                results = [analyzeOutcomeEmpirical(text, 'SINGLE')];
+            } else {
+                const wellerResult = analyzeOutcomeWeller(text, 'SINGLE');
+                const empiricalResult = analyzeOutcomeEmpirical(text, 'SINGLE');
+                results = [wellerResult, empiricalResult];
+            }
+            
+            displayResults(results, { totalOutcomes: 1, comparison: framework === 'compare' });
+        }
+
+        function loadCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('csvData').value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function analyzeBatch() {
+            const csvText = document.getElementById('csvData').value.trim();
+            if (!csvText) {
+                alert('Please enter CSV data or upload a file.');
+                return;
+            }
+            
+            const outcomes = parseCSV(csvText);
+            if (outcomes.length === 0) {
+                alert('No valid outcomes found in CSV data.');
+                return;
+            }
+            
+            const framework = document.querySelector('input[name="framework"]:checked').value;
+            let results = [];
+            
+            if (framework === 'weller') {
+                results = outcomes.map(outcome => analyzeOutcomeWeller(outcome.text, outcome.id));
+            } else if (framework === 'empirical') {
+                results = outcomes.map(outcome => analyzeOutcomeEmpirical(outcome.text, outcome.id));
+            } else {
+                // Compare both frameworks
+                outcomes.forEach(outcome => {
+                    results.push(analyzeOutcomeWeller(outcome.text, outcome.id));
+                    results.push(analyzeOutcomeEmpirical(outcome.text, outcome.id));
+                });
+            }
+            
+            const summary = {
+                totalOutcomes: outcomes.length,
+                comparison: framework === 'compare'
+            };
+            
+            displayResults(results, summary);
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            const outcomes = [];
+            
+            lines.forEach((line, index) => {
+                const [id, ...textParts] = line.split(',');
+                const text = textParts.join(',').trim();
+                
+                if (id && text) {
+                    outcomes.push({ id: id.trim(), text: text });
+                }
+            });
+            
+            return outcomes;
+        }
+
+        function displayResults(results, summary) {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+            
+            if (summary.comparison) {
+                // Group results by outcome ID for comparison
+                const grouped = {};
+                results.forEach(result => {
+                    if (!grouped[result.id]) grouped[result.id] = [];
+                    grouped[result.id].push(result);
+                });
+                
+                html += '<div class="summary"><h3>Framework Comparison Results</h3>';
+                html += `<p><strong>Outcomes Analyzed:</strong> ${summary.totalOutcomes}</p></div>`;
+                
+                Object.entries(grouped).forEach(([id, outcomes]) => {
+                    if (outcomes.length === 2) {
+                        const [weller, empirical] = outcomes[0].framework === 'Weller' ? outcomes : [outcomes[1], outcomes[0]];
+                        
+                        html += '<div class="comparison">';
+                        html += `<h4>${id}: Framework Comparison</h4>`;
+                        html += `<p><strong>Text:</strong> "${weller.text}"</p>`;
+                        html += `<p><strong>Weller:</strong> ${weller.classification} (${weller.confidence})</p>`;
+                        html += `<p><strong>Empirical:</strong> ${empirical.classification} (${empirical.confidence})</p>`;
+                        
+                        if (weller.classification !== empirical.classification) {
+                            html += `<p style="color: #D84315;"><strong>⚠️ DISAGREEMENT:</strong> Frameworks classify differently</p>`;
+                        } else {
+                            html += `<p style="color: #388E3C;"><strong>✓ AGREEMENT:</strong> Both frameworks agree</p>`;
+                        }
+                        html += '</div>';
+                    }
+                });
+            } else {
+                // Single framework results
+                const framework = results[0]?.framework || 'Unknown';
+                const edgeCases = results.filter(r => r.isEdgeCase);
+                
+                html += '<div class="summary">';
+                html += `<h3>${framework} Framework Results</h3>`;
+                html += `<p><strong>Total Outcomes:</strong> ${summary.totalOutcomes}</p>`;
+                html += `<p><strong>Edge Cases:</strong> ${edgeCases.length}</p>`;
+                html += '</div>';
+                
+                results.forEach(result => {
+                    const edgeClass = result.isEdgeCase ? ' edge-case' : '';
+                    html += `<div class="outcome-result ${result.classification}${edgeClass}">`;
+                    html += `<div class="classification">${result.id}: ${result.classification}</div>`;
+                    html += `<div class="confidence">Confidence: ${result.confidence}</div>`;
+                    
+                    if (result.isEdgeCase) {
+                        html += `<div class="edge-warning">⚠️ Edge Case: ${result.edgeCaseReasons.join('; ')}</div>`;
+                    }
+                    
+                    html += `<div class="rationale">${result.rationale}</div>`;
+                    html += `<div style="margin-top: 10px; font-size: 14px; color: #555;">"${result.text}"</div>`;
+                    html += '</div>';
+                });
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Initialize
+        document.getElementById('outcomeText').value = "Exercise significant judgement in the development of an empathetic, ethical, considerations and responsible or sustainable creative practice";
+    </script>
+</body>
+</html>
